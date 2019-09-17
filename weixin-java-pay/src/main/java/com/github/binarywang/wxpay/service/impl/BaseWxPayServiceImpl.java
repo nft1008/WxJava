@@ -406,6 +406,18 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
+  public WxPayProfitSharingResult profitSharing(WxPayProfitSharingRequest request) throws WxPayException {
+    request.checkAndSign(this.getConfig());
+
+    String url = this.getPayBaseUrl() + "/secapi/pay/profitsharing";
+
+    String responseContent = this.post(url, request.toXML(), false);
+    WxPayProfitSharingResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingResult.class);
+    result.checkResult(this, request.getSignType(), true);
+    return null;
+  }
+
+  @Override
   public byte[] createScanPayQrcodeMode1(String productId, File logoFile, Integer sideLength) {
     String content = this.createScanPayQrcodeMode1(productId);
     return this.createQrcode(content, logoFile, sideLength);

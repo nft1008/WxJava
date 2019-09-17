@@ -181,6 +181,13 @@ public interface WxPayService {
   Map<String, String> getPayInfo(WxPayUnifiedOrderRequest request) throws WxPayException;
 
   /**
+   * 单次分账请求按照传入的分账接收方账号和资金进行分账，同时会将订单剩余的待分账金额解冻给特约商户。故操作成功后，订单不能再进行分账，也不能进行分账完结。
+   * @param request
+   * @return
+   */
+  WxPayProfitSharingResult profitSharing(WxPayProfitSharingRequest request) throws WxPayException;
+
+  /**
    * 获取配置.
    *
    * @return the config

@@ -2,9 +2,10 @@ package com.github.binarywang.wxpay.service.impl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
+import com.github.binarywang.wxpay.bean.request.*;
+import com.github.binarywang.wxpay.bean.result.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
@@ -21,23 +22,6 @@ import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResultTest;
 import com.github.binarywang.wxpay.bean.order.WxPayAppOrderResult;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.order.WxPayNativeOrderResult;
-import com.github.binarywang.wxpay.bean.request.WxPayAuthcode2OpenidRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayMicropayRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayOrderReverseRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayReportRequest;
-import com.github.binarywang.wxpay.bean.request.WxPaySendRedpackRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayShorturlRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
-import com.github.binarywang.wxpay.bean.result.WxPayBillResult;
-import com.github.binarywang.wxpay.bean.result.WxPayFundFlowResult;
-import com.github.binarywang.wxpay.bean.result.WxPayMicropayResult;
-import com.github.binarywang.wxpay.bean.result.WxPayOrderReverseResult;
-import com.github.binarywang.wxpay.bean.result.WxPayRedpackQueryResult;
-import com.github.binarywang.wxpay.bean.result.WxPayRefundQueryResult;
-import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
-import com.github.binarywang.wxpay.bean.result.WxPaySendRedpackResult;
-import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants.AccountType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.BillType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.SignType;
@@ -632,4 +616,17 @@ public class BaseWxPayServiceImplTest {
     //see test in testUnifiedOrder()
   }
 
+
+  @Test
+  public void testProfitSharing() throws Exception {
+    WxPayProfitSharingRequest request = WxPayProfitSharingRequest.newBuilder()
+      .transactionId("11111111")
+      .outOrderNo("bbbbbbbb")
+      .receivers(Collections.singletonList(new WxPayProfitSharingRequest.Receiver("MERCHANT_ID", "86693852", "888", "分给商户A")))
+      .build();
+    request.setSignType(SignType.HMAC_SHA256);
+    WxPayProfitSharingResult result = this.payService.profitSharing(request);
+    this.logger.info(result.toString());
+    this.logger.warn(this.payService.getWxApiData().toString());
+  }
 }
