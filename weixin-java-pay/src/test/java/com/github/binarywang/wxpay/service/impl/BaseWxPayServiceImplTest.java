@@ -6,6 +6,8 @@ import java.util.*;
 
 import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.*;
+import com.google.gson.Gson;
+import me.chanjar.weixin.common.util.json.GsonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
@@ -619,10 +621,11 @@ public class BaseWxPayServiceImplTest {
 
   @Test
   public void testProfitSharing() throws Exception {
+    String receivers = new Gson().toJson(Collections.singletonList(new WxPayProfitSharingRequest.Receiver("MERCHANT_ID", "86693852", "888", "分给商户A")));
     WxPayProfitSharingRequest request = WxPayProfitSharingRequest.newBuilder()
       .transactionId("11111111")
       .outOrderNo("bbbbbbbb")
-      .receivers(Collections.singletonList(new WxPayProfitSharingRequest.Receiver("MERCHANT_ID", "86693852", "888", "分给商户A")))
+      .receivers(receivers)
       .build();
     request.setSignType(SignType.HMAC_SHA256);
     WxPayProfitSharingResult result = this.payService.profitSharing(request);

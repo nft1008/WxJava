@@ -12,6 +12,18 @@
   <artifactId>weixin-java-pay</artifactId>
   <name>WxJava - PAY Java SDK</name>
   <description>微信支付 Java SDK</description>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>8</source>
+          <target>8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
@@ -69,11 +81,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.m-m-m</groupId>
-      <artifactId>mmm-util-backport-java.util.function</artifactId>
-      <version>1.0.1</version>
     </dependency>
   </dependencies>
 

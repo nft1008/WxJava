@@ -78,7 +78,7 @@ public class WxPayProfitSharingRequest extends BaseWxPayRequest {
    * </pre>
    */
   @XStreamAlias("receivers")
-  private List<Receiver> receivers;
+  private String receivers;
 
 
   @AllArgsConstructor

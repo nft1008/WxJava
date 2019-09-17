@@ -411,7 +411,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
     String url = this.getPayBaseUrl() + "/secapi/pay/profitsharing";
 
-    String responseContent = this.post(url, request.toXML(), false);
+    String tmp = request.toXML();
+    String responseContent = this.post(url, tmp, false);
     WxPayProfitSharingResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingResult.class);
     result.checkResult(this, request.getSignType(), true);
     return null;
