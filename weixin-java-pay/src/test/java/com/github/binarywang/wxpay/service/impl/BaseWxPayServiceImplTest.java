@@ -621,7 +621,7 @@ public class BaseWxPayServiceImplTest {
 
   @Test
   public void testProfitSharing() throws Exception {
-    String receivers = new Gson().toJson(Collections.singletonList(new WxPayProfitSharingRequest.Receiver("MERCHANT_ID", "86693852", "888", "分给商户A")));
+    String receivers = new Gson().toJson(Collections.singletonList(new WxPayProfitSharingRequest.Receiver("MERCHANT_ID", "86693852", 888, "分给商户A")));
     WxPayProfitSharingRequest request = WxPayProfitSharingRequest.newBuilder()
       .transactionId("11111111")
       .outOrderNo("bbbbbbbb")

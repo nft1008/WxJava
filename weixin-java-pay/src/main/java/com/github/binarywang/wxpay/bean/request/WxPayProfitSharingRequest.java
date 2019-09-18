@@ -127,7 +127,7 @@ public class WxPayProfitSharingRequest extends BaseWxPayRequest {
      * 更多信息，详见文档：https://pay.weixin.qq.com/wiki/doc/api/allocation_sl.php?chapter=25_1&index=1
      * </pre>
      */
-    String amount;
+    Integer amount;
 
     /**
      * <pre>
