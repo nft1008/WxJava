@@ -2,7 +2,6 @@ package cn.binarywang.wx.miniapp.api.impl;
 
 import cn.binarywang.wx.miniapp.test.TestConfig;
 import com.google.common.collect.ImmutableMap;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.testng.annotations.*;
 
