@@ -7,7 +7,6 @@ import java.util.*;
 import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.*;
 import com.google.gson.Gson;
-import me.chanjar.weixin.common.util.json.GsonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
@@ -629,6 +628,18 @@ public class BaseWxPayServiceImplTest {
       .build();
     request.setSignType(SignType.HMAC_SHA256);
     WxPayProfitSharingResult result = this.payService.profitSharing(request);
+    this.logger.info(result.toString());
+    this.logger.warn(this.payService.getWxApiData().toString());
+  }
+
+  @Test
+  public void testProfitSharingAddReceiver() throws Exception {
+    String receiver = new Gson().toJson(new WxPayProfitSharingAddReceiverRequest.Receiver("MERCHANT_ID", "86693852", "示例商户全称", "STORE_OWNER", null));
+    WxPayProfitSharingAddReceiverRequest request = WxPayProfitSharingAddReceiverRequest.newBuilder()
+      .receiver(receiver)
+      .build();
+    request.setSignType(SignType.HMAC_SHA256);
+    WxPayProfitSharingAddReceiverResult result = this.payService.profitSharingAddReceiver(request);
     this.logger.info(result.toString());
     this.logger.warn(this.payService.getWxApiData().toString());
   }

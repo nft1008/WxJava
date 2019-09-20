@@ -411,11 +411,22 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
     String url = this.getPayBaseUrl() + "/secapi/pay/profitsharing";
 
-    String tmp = request.toXML();
-    String responseContent = this.post(url, tmp, false);
+    String responseContent = this.post(url, request.toXML(), false);
     WxPayProfitSharingResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingResult.class);
     result.checkResult(this, request.getSignType(), true);
-    return null;
+    return result;
+  }
+
+  @Override
+  public WxPayProfitSharingAddReceiverResult profitSharingAddReceiver(WxPayProfitSharingAddReceiverRequest request) throws WxPayException {
+    request.checkAndSign(this.getConfig());
+
+    String url = this.getPayBaseUrl() + "/pay/profitsharingaddreceiver";
+
+    String responseContent = this.post(url, request.toXML(), false);
+    WxPayProfitSharingAddReceiverResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingAddReceiverResult.class);
+    result.checkResult(this, request.getSignType(), true);
+    return result;
   }
 
   @Override

@@ -188,6 +188,14 @@ public interface WxPayService {
   WxPayProfitSharingResult profitSharing(WxPayProfitSharingRequest request) throws WxPayException;
 
   /**
+   * 商户发起添加分账接收方请求，后续可通过发起分账请求将结算后的钱分到该分账接收方。
+   * @param request
+   * @return
+   * @throws WxPayException
+   */
+  WxPayProfitSharingAddReceiverResult profitSharingAddReceiver(WxPayProfitSharingAddReceiverRequest request) throws WxPayException;
+
+  /**
    * 获取配置.
    *
    * @return the config
