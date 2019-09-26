@@ -13,6 +13,7 @@ import com.github.binarywang.wxpay.bean.order.WxPayNativeOrderResult;
 import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.*;
 import com.github.binarywang.wxpay.config.WxPayConfig;
+import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.constant.WxPayConstants.BillType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.SignType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.TradeType;
@@ -408,10 +409,11 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   @Override
   public WxPayProfitSharingResult profitSharing(WxPayProfitSharingRequest request) throws WxPayException {
     request.checkAndSign(this.getConfig());
+    request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
 
     String url = this.getPayBaseUrl() + "/secapi/pay/profitsharing";
 
-    String responseContent = this.post(url, request.toXML(), false);
+    String responseContent = this.post(url, request.toXML(), true);
     WxPayProfitSharingResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingResult.class);
     result.checkResult(this, request.getSignType(), true);
     return result;
@@ -420,11 +422,25 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   @Override
   public WxPayProfitSharingAddReceiverResult profitSharingAddReceiver(WxPayProfitSharingAddReceiverRequest request) throws WxPayException {
     request.checkAndSign(this.getConfig());
+    request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
 
     String url = this.getPayBaseUrl() + "/pay/profitsharingaddreceiver";
 
     String responseContent = this.post(url, request.toXML(), false);
     WxPayProfitSharingAddReceiverResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingAddReceiverResult.class);
+    result.checkResult(this, request.getSignType(), true);
+    return result;
+  }
+
+  @Override
+  public WxPayProfitSharingResult profitSharingFinish (WxPayProfitSharingFinishRequest request) throws WxPayException {
+    request.checkAndSign(this.getConfig());
+    request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
+
+    String url = this.getPayBaseUrl() + "/secapi/pay/profitsharingfinish";
+
+    String responseContent = this.post(url, request.toXML(), true);
+    WxPayProfitSharingResult result = BaseWxPayResult.fromXML(responseContent, WxPayProfitSharingResult.class);
     result.checkResult(this, request.getSignType(), true);
     return result;
   }

@@ -195,6 +195,15 @@ public interface WxPayService {
    */
   WxPayProfitSharingAddReceiverResult profitSharingAddReceiver(WxPayProfitSharingAddReceiverRequest request) throws WxPayException;
 
+
+  /**
+   * 完结分账
+   * @param request
+   * @return
+   * @throws WxPayException
+   */
+  WxPayProfitSharingResult profitSharingFinish(WxPayProfitSharingFinishRequest request) throws WxPayException;
+
   /**
    * 获取配置.
    *

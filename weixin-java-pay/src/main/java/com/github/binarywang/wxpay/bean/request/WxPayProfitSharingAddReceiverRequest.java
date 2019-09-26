@@ -138,7 +138,7 @@ public class WxPayProfitSharingAddReceiverRequest extends BaseWxPayRequest {
 
 
   @Override
-  protected void checkConstraints() throws WxPayException {
+  protected void checkConstraints() {
     return;
   }
 }
