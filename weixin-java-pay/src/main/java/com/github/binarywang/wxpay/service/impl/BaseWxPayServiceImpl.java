@@ -408,8 +408,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
   @Override
   public WxPayProfitSharingResult profitSharing(WxPayProfitSharingRequest request) throws WxPayException {
-    request.checkAndSign(this.getConfig());
     request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
+    request.checkAndSign(this.getConfig());
 
     String url = this.getPayBaseUrl() + "/secapi/pay/profitsharing";
 
@@ -421,8 +421,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
   @Override
   public WxPayProfitSharingAddReceiverResult profitSharingAddReceiver(WxPayProfitSharingAddReceiverRequest request) throws WxPayException {
-    request.checkAndSign(this.getConfig());
     request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
+    request.checkAndSign(this.getConfig());
 
     String url = this.getPayBaseUrl() + "/pay/profitsharingaddreceiver";
 
@@ -434,8 +434,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
   @Override
   public WxPayProfitSharingResult profitSharingFinish (WxPayProfitSharingFinishRequest request) throws WxPayException {
-    request.checkAndSign(this.getConfig());
     request.setSignType(WxPayConstants.SignType.HMAC_SHA256);
+    request.checkAndSign(this.getConfig());
 
     String url = this.getPayBaseUrl() + "/secapi/pay/profitsharingfinish";
 
