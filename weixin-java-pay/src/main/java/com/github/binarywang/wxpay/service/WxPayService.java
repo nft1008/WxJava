@@ -1,6 +1,7 @@
 package com.github.binarywang.wxpay.service;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -57,6 +58,21 @@ public interface WxPayService {
    * @throws WxPayException the wx pay exception
    */
   String post(String url, String requestStr, boolean useKey) throws WxPayException;
+
+  /**
+   * 发送post V3请求，得到响应字符串.
+   */
+  String postV3(String url, String requestStr, boolean userKey) throws WxPayException;
+
+  /**
+   * 发送post V3 file请求.
+   */
+//  String postFileV3(String url, InputStream is, ) throws WxPayException;
+
+  /**
+   * 发送get V3请求，得到响应字符串.
+   */
+  String getV3(String url) throws WxPayException;
 
   /**
    * 获取企业付款服务类.
@@ -720,4 +736,25 @@ public interface WxPayService {
    * @throws WxPayException the wx pay exception
    */
   String queryComment(WxPayQueryCommentRequest request) throws WxPayException;
+
+  /**
+   * 特约商户进件 - 提交申请单API
+   */
+  WxPayV3Applyment4SubResult applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException;
+
+  /**
+   * 通过业务申请编号查询申请状态
+   */
+  WxPayV3Applyment4SubStatusResult applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException ;
+
+  /**
+   * 通过申请单号查询申请状态
+   */
+  WxPayV3Applyment4SubStatusResult applyment4SubStatusByApplymentId(String applymentId) throws WxPayException ;
+
+  /**
+   * 图片上传
+   */
+//  void mediaUpload();
+
 }

@@ -67,6 +67,16 @@ public class WxPayServiceJoddHttpImpl extends BaseWxPayServiceImpl {
     }
   }
 
+  @Override
+  public String postV3(String url, String requestStr, boolean userKey) throws WxPayException {
+    return null;
+  }
+
+  @Override
+  public String getV3(String url) throws WxPayException {
+    return null;
+  }
+
   private HttpRequest buildHttpRequest(String url, String requestStr, boolean useKey) throws WxPayException {
     HttpRequest request = HttpRequest
       .post(url)

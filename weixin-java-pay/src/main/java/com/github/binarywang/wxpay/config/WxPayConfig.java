@@ -9,7 +9,14 @@ import org.apache.http.ssl.SSLContexts;
 import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.net.URL;
-import java.security.KeyStore;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
+import java.util.Enumeration;
 
 /**
  * 微信支付配置
@@ -81,6 +88,8 @@ public class WxPayConfig {
    */
   private String keyPath;
 
+  private String serialNo;
+
   /**
    * p12证书文件内容的字节数组.
    */
@@ -114,21 +123,13 @@ public class WxPayConfig {
     return this.payBaseUrl;
   }
 
-  /**
-   * 初始化ssl.
-   *
-   * @return the ssl context
-   * @throws WxPayException the wx pay exception
-   */
-  public SSLContext initSSLContext() throws WxPayException {
+  private InputStream getKeyData() throws WxPayException {
     if (StringUtils.isBlank(this.getMchId())) {
       throw new WxPayException("请确保商户号mchId已设置");
     }
 
     InputStream inputStream;
-    if (this.keyContent != null) {
-      inputStream = new ByteArrayInputStream(this.keyContent);
-    } else {
+    if (this.keyContent == null) {
       if (StringUtils.isBlank(this.getKeyPath())) {
         throw new WxPayException("请确保证书文件地址keyPath已配置");
       }
@@ -166,7 +167,32 @@ public class WxPayConfig {
           throw new WxPayException(fileHasProblemMsg, e);
         }
       }
+
+      ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int len;
+      try {
+        while ((len = inputStream.read(buffer)) > -1) {
+          swapStream.write(buffer, 0, len);
+        }
+        swapStream.flush();
+        this.keyContent = swapStream.toByteArray();
+      } catch (IOException e) {
+        throw new WxPayException("请确保证书文件地址keyPath已配置");
+      }
     }
+
+    return new ByteArrayInputStream(this.keyContent);
+  }
+
+  /**
+   * 初始化ssl.
+   *
+   * @return the ssl context
+   * @throws WxPayException the wx pay exception
+   */
+  public SSLContext initSSLContext() throws WxPayException {
+    InputStream inputStream = getKeyData();
 
     try {
       KeyStore keystore = KeyStore.getInstance("PKCS12");
@@ -179,6 +205,72 @@ public class WxPayConfig {
     } finally {
       IOUtils.closeQuietly(inputStream);
     }
+  }
+
+
+  /**
+   * 获取私钥。
+   *
+   * @return 私钥对象
+   */
+  public PrivateKey getPrivateKey() throws WxPayException {
+    InputStream inputStream = getKeyData();
+
+    try {
+      KeyStore keystore = KeyStore.getInstance("PKCS12");
+      char[] partnerId2charArray = this.getMchId().toCharArray();
+      keystore.load(inputStream, partnerId2charArray);
+
+      Enumeration enume = keystore.aliases();
+      String keyAlias = null;
+      if (enume.hasMoreElements()) {
+        keyAlias = (String) enume.nextElement();
+      }
+      return (PrivateKey) keystore.getKey(keyAlias, partnerId2charArray);
+    } catch (Exception e) {
+      throw new WxPayException("证书文件有问题，请核实！", e);
+    } finally {
+      IOUtils.closeQuietly(inputStream);
+    }
+  }
+
+  /**
+   * 获取证书
+   * @return
+   * @throws WxPayException
+   */
+  public Certificate getCert() throws WxPayException {
+    InputStream inputStream = getKeyData();
+
+    try {
+      KeyStore keystore = KeyStore.getInstance("PKCS12");
+      char[] partnerId2charArray = this.getMchId().toCharArray();
+      keystore.load(inputStream, partnerId2charArray);
+
+      Enumeration enume = keystore.aliases();
+      String keyAlias = null;
+      if (enume.hasMoreElements()) {
+        keyAlias = (String) enume.nextElement();
+      }
+      return keystore.getCertificate(keyAlias);
+    } catch (Exception e) {
+      throw new WxPayException("证书文件有问题，请核实！", e);
+    } finally {
+      IOUtils.closeQuietly(inputStream);
+    }
+  }
+
+  /**
+   * 获取公钥
+   * @return
+   * @throws WxPayException
+   */
+  public PublicKey getPublicKey() throws WxPayException {
+    return this.getCert().getPublicKey();
+  }
+
+  public String getPrivateKeyStr() throws WxPayException {
+    return Base64.getEncoder().encodeToString(this.getPrivateKey().getEncoded());
   }
 
 }

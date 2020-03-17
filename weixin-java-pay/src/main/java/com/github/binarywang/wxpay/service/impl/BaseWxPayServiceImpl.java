@@ -23,6 +23,7 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.util.SignUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import jodd.io.ZipUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -829,6 +830,46 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     }
 
     return responseContent;
+  }
+
+  @Override
+  public WxPayV3Applyment4SubResult applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException {
+    String url = this.getPayBaseUrl() + "/v3/applyment4sub/applyment/";
+    Gson gson = new Gson();
+    request.encryptData(this.config.getCert());
+    String responseContent = this.postV3(url, gson.toJson(request), false);
+    if (StringUtils.isBlank(responseContent)) {
+      throw new WxPayException("无响应结果");
+    }
+
+    WxPayV3Applyment4SubResult result = gson.fromJson(responseContent, WxPayV3Applyment4SubResult.class);
+    return result;
+  }
+
+  @Override
+  public WxPayV3Applyment4SubStatusResult applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException {
+    String url = String.format("/v3/applyment4sub/applyment/business_code/%s", businessCode);
+    String responseContent = this.getV3(url);
+    if (StringUtils.isBlank(responseContent)) {
+      throw new WxPayException("无响应结果");
+    }
+
+    Gson gson = new Gson();
+    WxPayV3Applyment4SubStatusResult result = gson.fromJson(responseContent, WxPayV3Applyment4SubStatusResult.class);
+    return result;
+  }
+
+  @Override
+  public WxPayV3Applyment4SubStatusResult applyment4SubStatusByApplymentId(String applymentId) throws WxPayException {
+    String url = String.format("/v3/applyment4sub/applyment/applyment_id/%s", applymentId);
+    String responseContent = this.getV3(url);
+    if (StringUtils.isBlank(responseContent)) {
+      throw new WxPayException("无响应结果");
+    }
+
+    Gson gson = new Gson();
+    WxPayV3Applyment4SubStatusResult result = gson.fromJson(responseContent, WxPayV3Applyment4SubStatusResult.class);
+    return result;
   }
 
 }
