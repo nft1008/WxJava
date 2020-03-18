@@ -229,7 +229,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
 
   private HttpEntity getFileHttpEntity(File file, String meta) {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
-    multipartEntityBuilder.setBoundary("");
+    multipartEntityBuilder.setBoundary("boundary=");
     multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
     multipartEntityBuilder.addTextBody("meta", meta, ContentType.APPLICATION_JSON);
     multipartEntityBuilder.addBinaryBody("file", file, ContentType.create("image/jpg"), file.getName());
@@ -304,7 +304,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
 
   private Map<String, String> getFileHeadersV3(String authorization) {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "multipart/form-data");
+    headers.put("Content-Type", "multipart/form-data;boundary=\"boundary\"");
     headers.put("Accept", "application/json;charset=utf-8");
     headers.put("Authorization", authorization);
     return headers;
