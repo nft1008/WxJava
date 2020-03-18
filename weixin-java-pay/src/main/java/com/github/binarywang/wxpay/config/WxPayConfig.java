@@ -9,12 +9,8 @@ import org.apache.http.ssl.SSLContexts;
 import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
-import java.security.cert.Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Enumeration;
 
@@ -239,7 +235,7 @@ public class WxPayConfig {
    * @return
    * @throws WxPayException
    */
-  public Certificate getCert() throws WxPayException {
+  public X509Certificate getCert() throws WxPayException {
     InputStream inputStream = getKeyData();
 
     try {
@@ -252,7 +248,7 @@ public class WxPayConfig {
       if (enume.hasMoreElements()) {
         keyAlias = (String) enume.nextElement();
       }
-      return keystore.getCertificate(keyAlias);
+      return (X509Certificate) keystore.getCertificate(keyAlias);
     } catch (Exception e) {
       throw new WxPayException("证书文件有问题，请核实！", e);
     } finally {

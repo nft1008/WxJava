@@ -1,9 +1,10 @@
 package com.github.binarywang.wxpay.service.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.Signature;
 import java.util.*;
 import javax.net.ssl.SSLContext;
 
@@ -11,11 +12,10 @@ import com.github.binarywang.wxpay.bean.WxPayApiData;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.util.V3Utils;
-import com.sun.org.apache.xpath.internal.operations.Gt;
-import jodd.io.FileUtil;
 import jodd.util.Base64;
-import okhttp3.HttpUrl;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,7 +26,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -89,22 +92,10 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postV3(String urlSuffix, String body, boolean userKey) throws WxPayException {
-    long timestamp = System.currentTimeMillis() / 1000;
-    String nonceStr = String.valueOf(System.currentTimeMillis());
-    // 构建签名参数
-    String buildSignMessage = V3Utils.buildSignMessage(WxPayConstants.RequestMethod.POST, urlSuffix, timestamp, nonceStr, body);
-    // 获取商户私钥
-    String key = this.config.getPrivateKeyStr();
-    // 生成签名
-    String signature = V3Utils.encryptByPrivateKey(buildSignMessage, key);
-    // 根据平台规则生成请求头 authorization
-    String authType = "WECHATPAY2-SHA256-RSA2048";
-    String authorization = V3Utils.getAuthorization(this.config.getMchId(), this.config.getSerialNo(), nonceStr, String.valueOf(timestamp), signature, authType);
-
+  public String postV3(String urlSuffix, String body) throws WxPayException {
     try {
       HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
-      HttpPost httpPost = this.createHttpPostV3(this.getPayBaseUrl().concat(urlSuffix), authorization, body);
+      HttpPost httpPost = this.createHttpPostV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, body), body);
       try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
           String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -124,22 +115,36 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String getV3(String urlSuffix) throws WxPayException {
-    long timestamp = System.currentTimeMillis() / 1000;
-    String nonceStr = String.valueOf(System.currentTimeMillis());
-    // 构建签名参数
-    String buildSignMessage = V3Utils.buildSignMessage(WxPayConstants.RequestMethod.GET, urlSuffix, timestamp, nonceStr, "");
-    // 获取商户私钥
-    String key = this.config.getPrivateKeyStr();
-    // 生成签名
-    String signature = V3Utils.encryptByPrivateKey(buildSignMessage, key);
-    // 根据平台规则生成请求头 authorization
-    String authType = "WECHATPAY2-SHA256-RSA2048";
-    String authorization = V3Utils.getAuthorization(this.config.getMchId(), this.config.getSerialNo(), nonceStr, String.valueOf(timestamp), signature, authType);
+  public String postFileV3(String urlSuffix, File file) throws WxPayException {
+    try {
+      String fileSha256 = DigestUtils.sha256Hex(new FileInputStream(file));//文件sha256
+      String meta = "{\"filename\":\""+file.getName()+"\",\"sha256\":\""+fileSha256+"\"}";
 
+      HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
+      HttpPost httpPost = this.createHttpPostFileV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, meta), this.getFileHttpEntity(file, meta));
+      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+          String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+          this.log.info("\n【请求地址】：{}\n【请求数据】：{}\n【响应数据】：{}", urlSuffix, file.getName(), responseString);
+          if (response.getStatusLine().getStatusCode() != 200) {
+            throw new WxPayException(responseString);
+          }
+          return responseString;
+        }
+      } finally {
+        httpPost.releaseConnection();
+      }
+    } catch (Exception e) {
+      this.log.error("\n【请求地址】：{}\n【请求数据】：{}\n【异常信息】：{}", urlSuffix, file.getName(), e.getMessage());
+      throw new WxPayException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public String getV3(String urlSuffix) throws WxPayException {
     try {
       HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
-      HttpGet httpGet = this.createHttpGetV3(this.getPayBaseUrl().concat(urlSuffix), authorization);
+      HttpGet httpGet = this.createHttpGetV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.GET, urlSuffix, ""));
       try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
           String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -222,6 +227,32 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     return httpPost;
   }
 
+  private HttpEntity getFileHttpEntity(File file, String meta) {
+    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
+    multipartEntityBuilder.setBoundary("");
+    multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
+    multipartEntityBuilder.addTextBody("meta", meta, ContentType.APPLICATION_JSON);
+    multipartEntityBuilder.addBinaryBody("file", file, ContentType.create("image/jpg"), file.getName());
+    return multipartEntityBuilder.build();
+  }
+
+  private HttpPost createHttpPostFileV3(String url, String authorization, HttpEntity httpEntity) {
+    HttpPost httpPost = new HttpPost(url);
+    Map<String, String> headers = getFileHeadersV3(authorization);
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      httpPost.setHeader(entry.getKey(), entry.getValue());
+    }
+    httpPost.setEntity(httpEntity);
+
+    httpPost.setConfig(RequestConfig.custom()
+      .setConnectionRequestTimeout(this.getConfig().getHttpConnectionTimeout())
+      .setConnectTimeout(this.getConfig().getHttpConnectionTimeout())
+      .setSocketTimeout(this.getConfig().getHttpTimeout())
+      .build());
+
+    return httpPost;
+  }
+
   private HttpGet createHttpGetV3(String url, String authorization) {
     HttpGet httpGet = new HttpGet(url);
     Map<String, String> headers = getHeadersV3(authorization);
@@ -249,8 +280,22 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     httpClientBuilder.setSSLSocketFactory(connectionSocketFactory);
   }
 
+  private String getAuthorization(String requestMethod, String urlSuffix, String body) throws WxPayException{
+    long timestamp = System.currentTimeMillis() / 1000;
+    String nonceStr = String.valueOf(System.currentTimeMillis());
+    // 构建签名参数
+    String buildSignMessage = V3Utils.buildSignMessage(requestMethod, urlSuffix, timestamp, nonceStr, body);
+    // 获取商户私钥
+    String key = this.config.getPrivateKeyStr();
+    // 生成签名
+    String signature = V3Utils.encryptByPrivateKey(buildSignMessage, key);
+    // 根据平台规则生成请求头 authorization
+    String authType = "WECHATPAY2-SHA256-RSA2048";
+    return V3Utils.getAuthorization(this.config.getMchId(), this.config.getSerialNo(), nonceStr, String.valueOf(timestamp), signature, authType);
+  }
+
   private Map<String, String> getHeadersV3(String authorization) {
-    Map<String, String> headers = new HashMap<>(4);
+    Map<String, String> headers = new HashMap<>();
     headers.put("Content-Type", "application/json;charset=utf-8");
     headers.put("Accept", "application/json;charset=utf-8");
     headers.put("Authorization", authorization);
@@ -258,8 +303,8 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   private Map<String, String> getFileHeadersV3(String authorization) {
-    Map<String, String> headers = new HashMap<>(4);
-    headers.put("Content-Type", "application/json;charset=utf-8");
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Content-Type", "multipart/form-data");
     headers.put("Accept", "application/json;charset=utf-8");
     headers.put("Authorization", authorization);
     return headers;

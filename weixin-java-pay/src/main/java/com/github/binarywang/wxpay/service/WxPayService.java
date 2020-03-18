@@ -62,17 +62,17 @@ public interface WxPayService {
   /**
    * 发送post V3请求，得到响应字符串.
    */
-  String postV3(String url, String requestStr, boolean userKey) throws WxPayException;
+  String postV3(String urlSuffix, String requestStr) throws WxPayException;
 
   /**
    * 发送post V3 file请求.
    */
-//  String postFileV3(String url, InputStream is, ) throws WxPayException;
+  String postFileV3(String urlSuffix, File file) throws WxPayException;
 
   /**
    * 发送get V3请求，得到响应字符串.
    */
-  String getV3(String url) throws WxPayException;
+  String getV3(String urlSuffix) throws WxPayException;
 
   /**
    * 获取企业付款服务类.
@@ -740,21 +740,21 @@ public interface WxPayService {
   /**
    * 特约商户进件 - 提交申请单API
    */
-  WxPayV3Applyment4SubResult applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException;
+  WxPayV3Applyment4SubResult v3Applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException;
 
   /**
    * 通过业务申请编号查询申请状态
    */
-  WxPayV3Applyment4SubStatusResult applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException ;
+  WxPayV3Applyment4SubStatusResult v3Applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException;
 
   /**
    * 通过申请单号查询申请状态
    */
-  WxPayV3Applyment4SubStatusResult applyment4SubStatusByApplymentId(String applymentId) throws WxPayException ;
+  WxPayV3Applyment4SubStatusResult v3Applyment4SubStatusByApplymentId(String applymentId) throws WxPayException;
 
   /**
    * 图片上传
    */
-//  void mediaUpload();
+  WxPayV3MediaUploadResult v3MediaUpload(File file) throws WxPayException;
 
 }

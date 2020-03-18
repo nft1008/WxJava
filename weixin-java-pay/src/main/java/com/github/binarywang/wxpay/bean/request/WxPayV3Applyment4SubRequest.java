@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 @Data
 @Builder(builderMethodName = "newBuilder")
@@ -448,7 +448,7 @@ public class WxPayV3Applyment4SubRequest {
   /**
    * 加密敏感信息
    */
-  public void encryptData(Certificate certificate) throws WxPayException {
+  public void encryptData(X509Certificate certificate) throws WxPayException {
     try {
       this.contactInfo.contactName = V3Utils.rsaEncryptOAEP(this.contactInfo.contactName, certificate);
       this.contactInfo.contactIdNumber = V3Utils.rsaEncryptOAEP(this.contactInfo.contactIdNumber, certificate);

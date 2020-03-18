@@ -833,11 +833,11 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
-  public WxPayV3Applyment4SubResult applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException {
-    String url = this.getPayBaseUrl() + "/v3/applyment4sub/applyment/";
+  public WxPayV3Applyment4SubResult v3Applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException {
+    String urlSuffix = this.getPayBaseUrl() + "/v3/applyment4sub/applyment/";
     Gson gson = new Gson();
     request.encryptData(this.config.getCert());
-    String responseContent = this.postV3(url, gson.toJson(request), false);
+    String responseContent = this.postV3(urlSuffix, gson.toJson(request));
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
     }
@@ -847,9 +847,9 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
-  public WxPayV3Applyment4SubStatusResult applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException {
-    String url = String.format("/v3/applyment4sub/applyment/business_code/%s", businessCode);
-    String responseContent = this.getV3(url);
+  public WxPayV3Applyment4SubStatusResult v3Applyment4SubStatusByBusinessCode(String businessCode) throws WxPayException {
+    String urlSuffix = String.format("/v3/applyment4sub/applyment/business_code/%s", businessCode);
+    String responseContent = this.getV3(urlSuffix);
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
     }
@@ -860,15 +860,28 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
-  public WxPayV3Applyment4SubStatusResult applyment4SubStatusByApplymentId(String applymentId) throws WxPayException {
-    String url = String.format("/v3/applyment4sub/applyment/applyment_id/%s", applymentId);
-    String responseContent = this.getV3(url);
+  public WxPayV3Applyment4SubStatusResult v3Applyment4SubStatusByApplymentId(String applymentId) throws WxPayException {
+    String urlSuffix = String.format("/v3/applyment4sub/applyment/applyment_id/%s", applymentId);
+    String responseContent = this.getV3(urlSuffix);
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
     }
 
     Gson gson = new Gson();
     WxPayV3Applyment4SubStatusResult result = gson.fromJson(responseContent, WxPayV3Applyment4SubStatusResult.class);
+    return result;
+  }
+
+  @Override
+  public WxPayV3MediaUploadResult v3MediaUpload(File file) throws WxPayException {
+    String url = "/v3/merchant/media/upload";
+    String responseContent = this.postFileV3(url, file);
+    if (StringUtils.isBlank(responseContent)) {
+      throw new WxPayException("无响应结果");
+    }
+
+    Gson gson = new Gson();
+    WxPayV3MediaUploadResult result = gson.fromJson(responseContent, WxPayV3MediaUploadResult.class);
     return result;
   }
 
