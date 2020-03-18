@@ -1,7 +1,6 @@
 package com.github.binarywang.wxpay.util;
 
 import com.github.binarywang.wxpay.exception.WxPayException;
-import jodd.io.FileUtil;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -15,7 +14,6 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 
