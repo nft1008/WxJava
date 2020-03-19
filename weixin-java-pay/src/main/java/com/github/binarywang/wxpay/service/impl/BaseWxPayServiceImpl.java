@@ -19,8 +19,11 @@ import com.github.binarywang.wxpay.constant.WxPayConstants.SignType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.TradeType;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.EntPayService;
+import com.github.binarywang.wxpay.service.ProfitSharingService;
+import com.github.binarywang.wxpay.service.RedpackService;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.util.SignUtils;
+import com.github.binarywang.wxpay.util.XmlConfig;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -61,6 +64,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   static ThreadLocal<WxPayApiData> wxApiData = new ThreadLocal<>();
 
   private EntPayService entPayService = new EntPayServiceImpl(this);
+  private ProfitSharingService profitSharingService = new ProfitSharingServiceImpl(this);
+  private RedpackService redpackService = new RedpackServiceImpl(this);
 
   /**
    * The Config.
@@ -70,6 +75,16 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   @Override
   public EntPayService getEntPayService() {
     return entPayService;
+  }
+
+  @Override
+  public ProfitSharingService getProfitSharingService() {
+    return profitSharingService;
+  }
+
+  @Override
+  public RedpackService getRedpackService() {
+    return this.redpackService;
   }
 
   @Override
@@ -106,7 +121,8 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     }
 
     String responseContent = this.post(url, request.toXML(), true);
-    WxPayRefundResult result = WxPayRefundResult.fromXML(responseContent);
+    WxPayRefundResult result = BaseWxPayResult.fromXML(responseContent, WxPayRefundResult.class);
+    result.composeRefundCoupons();
     result.checkResult(this, request.getSignType(), true);
     return result;
   }
@@ -144,11 +160,9 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
       result.checkResult(this, this.getConfig().getSignType(), false);
       return result;
     } catch (WxPayException e) {
-      log.error(e.getMessage(), e);
       throw e;
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      throw new WxPayException("发生异常，" + e.getMessage(), e);
+      throw new WxPayException("发生异常！", e);
     }
   }
 
@@ -156,11 +170,16 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   public WxPayRefundNotifyResult parseRefundNotifyResult(String xmlData) throws WxPayException {
     try {
       log.debug("微信支付退款异步通知参数：{}", xmlData);
-      WxPayRefundNotifyResult result = WxPayRefundNotifyResult.fromXML(xmlData, this.getConfig().getMchKey());
+      WxPayRefundNotifyResult result;
+      if (XmlConfig.fastMode) {
+        result = BaseWxPayResult.fromXML(xmlData, WxPayRefundNotifyResult.class);
+        result.decryptReqInfo(this.getConfig().getMchKey());
+      } else {
+        result = WxPayRefundNotifyResult.fromXML(xmlData, this.getConfig().getMchKey());
+      }
       log.debug("微信支付退款异步通知解析后的对象：{}", result);
       return result;
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
       throw new WxPayException("发生异常，" + e.getMessage(), e);
     }
   }
@@ -174,48 +193,32 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
       result.checkResult(this, this.getConfig().getSignType(), false);
       return result;
     } catch (WxPayException e) {
-      log.error(e.getMessage(), e);
       throw e;
     } catch (Exception e) {
-      log.error(e.getMessage(), e);
       throw new WxPayException("发生异常，" + e.getMessage(), e);
     }
 
   }
 
   @Override
+  public WxPaySendMiniProgramRedpackResult sendMiniProgramRedpack(WxPaySendMiniProgramRedpackRequest request)
+    throws WxPayException {
+    return this.redpackService.sendMiniProgramRedpack(request);
+  }
+
+  @Override
   public WxPaySendRedpackResult sendRedpack(WxPaySendRedpackRequest request) throws WxPayException {
-    request.checkAndSign(this.getConfig());
-
-    String url = this.getPayBaseUrl() + "/mmpaymkttransfers/sendredpack";
-    if (request.getAmtType() != null) {
-      //裂变红包
-      url = this.getPayBaseUrl() + "/mmpaymkttransfers/sendgroupredpack";
-    }
-
-    String responseContent = this.post(url, request.toXML(), true);
-    final WxPaySendRedpackResult result = BaseWxPayResult.fromXML(responseContent, WxPaySendRedpackResult.class);
-    result.checkResult(this, request.getSignType(), true);
-    return result;
+    return this.redpackService.sendRedpack(request);
   }
 
   @Override
   public WxPayRedpackQueryResult queryRedpack(String mchBillNo) throws WxPayException {
-    WxPayRedpackQueryRequest request = new WxPayRedpackQueryRequest();
-    request.setMchBillNo(mchBillNo);
-    return this.queryRedpack(request);
+    return this.redpackService.queryRedpack(mchBillNo);
   }
 
   @Override
   public WxPayRedpackQueryResult queryRedpack(WxPayRedpackQueryRequest request) throws WxPayException {
-    request.setBillType(BillType.MCHT);
-    request.checkAndSign(this.getConfig());
-
-    String url = this.getPayBaseUrl() + "/mmpaymkttransfers/gethbinfo";
-    String responseContent = this.post(url, request.toXML(), true);
-    WxPayRedpackQueryResult result = BaseWxPayResult.fromXML(responseContent, WxPayRedpackQueryResult.class);
-    result.checkResult(this, request.getSignType(), true);
-    return result;
+    return this.redpackService.queryRedpack(request);
   }
 
   @Override
@@ -322,7 +325,11 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
       }
 
       case TradeType.JSAPI: {
-        String signType = SignType.MD5;
+        String signType = request.getSignType();
+        if (signType == null) {
+          signType = SignType.MD5;
+        }
+
         String appid = unifiedOrderResult.getAppid();
         if (StringUtils.isNotEmpty(unifiedOrderResult.getSubAppId())) {
           appid = unifiedOrderResult.getSubAppId();
@@ -554,7 +561,7 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     return WxPayBillResult.fromRawBillResultString(responseContent, billType);
   }
 
-  private String handleGzipBill(String url, String requestStr) {
+  private String handleGzipBill(String url, String requestStr) throws WxPayException {
     try {
       byte[] responseBytes = this.postForBytes(url, requestStr, false);
       Path tempDirectory = Files.createTempDirectory("bill");
@@ -568,14 +575,12 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
           throw WxPayException.from(BaseWxPayResult.fromXML(new String(responseBytes, StandardCharsets.UTF_8),
             WxPayCommonResult.class));
         } else {
-          this.log.error("解压zip文件出错", e);
+          throw new WxPayException("解压zip文件出错！", e);
         }
       }
     } catch (Exception e) {
-      this.log.error("解析对账单文件时出错", e);
+      throw new WxPayException("解析对账单文件时出错！", e);
     }
-
-    return null;
   }
 
   @Override
@@ -623,15 +628,13 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
           throw WxPayException.from(BaseWxPayResult.fromXML(new String(responseBytes, StandardCharsets.UTF_8),
             WxPayCommonResult.class));
         } else {
-          this.log.error("解压zip文件出错", e);
-          throw new WxPayException("解压zip文件出错");
+          throw new WxPayException("解压zip文件出错", e);
         }
       }
     } catch (WxPayException wxPayException) {
       throw wxPayException;
     } catch (Exception e) {
-      this.log.error("解析对账单文件时出错", e);
-      throw new WxPayException("解压zip文件出错");
+      throw new WxPayException("解压zip文件出错", e);
     }
   }
 
@@ -872,6 +875,15 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     return result;
   }
 
+  public WxPayFaceAuthInfoResult getWxPayFaceAuthInfo(WxPayFaceAuthInfoRequest request) throws WxPayException {
+    request.checkAndSign(this.getConfig());
+    String url = "https://payapp.weixin.qq.com/face/get_wxpayface_authinfo";
+    String responseContent = this.post(url, request.toXML(), false);
+    WxPayFaceAuthInfoResult result = BaseWxPayResult.fromXML(responseContent, WxPayFaceAuthInfoResult.class);
+    result.checkResult(this, request.getSignType(), true);
+    return result;
+  }
+
   @Override
   public WxPayV3MediaUploadResult v3MediaUpload(File file) throws WxPayException {
     String url = "/v3/merchant/media/upload";
@@ -884,5 +896,15 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     WxPayV3MediaUploadResult result = gson.fromJson(responseContent, WxPayV3MediaUploadResult.class);
     return result;
   }
+
+    public WxPayFacepayResult facepay(WxPayFacepayRequest request) throws WxPayException {
+      request.checkAndSign(this.getConfig());
+
+      String url = this.getPayBaseUrl() + "/pay/facepay";
+      String responseContent = this.post(url, request.toXML(), false);
+      WxPayFacepayResult result = BaseWxPayResult.fromXML(responseContent, WxPayFacepayResult.class);
+      result.checkResult(this, request.getSignType(), true);
+      return result;
+    }
 
 }

@@ -9,6 +9,8 @@ import lombok.experimental.Accessors;
 import me.chanjar.weixin.common.annotation.Required;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
+
 /**
  * <pre>
  * 统一下单请求参数对象.
@@ -349,8 +351,9 @@ public class WxPayUnifiedOrderRequest extends BaseWxPayRequest {
   /**
    * <pre>
    * 字段名：是否指定服务商分账.
-   * 变量名：profitSharing
+   * 变量名：profit_sharing
    * 是否必填：否
+   * 详情：Y-是，需要分账  N-否，不分账，字母要求大写，不传默认不分账
    * 详细参考 https://pay.weixin.qq.com/wiki/doc/api/allocation_sl.php?chapter=24_3&index=3
    * </pre>
    */
@@ -393,6 +396,32 @@ public class WxPayUnifiedOrderRequest extends BaseWxPayRequest {
     }
 
     super.checkAndSign(config);
+  }
+
+  @Override
+  protected void storeMap(Map<String, String> map) {
+    map.put("version", version);
+    map.put("device_info", deviceInfo);
+    map.put("body", body);
+    map.put("detail", detail);
+    map.put("attach", attach);
+    map.put("out_trade_no", outTradeNo);
+    map.put("fee_type", feeType);
+    map.put("total_fee", totalFee.toString());
+    map.put("spbill_create_ip", spbillCreateIp);
+    map.put("time_start", timeStart);
+    map.put("time_expire", timeExpire);
+    map.put("goods_tag", goodsTag);
+    map.put("notify_url", notifyUrl);
+    map.put("trade_type", tradeType);
+    map.put("product_id", productId);
+    map.put("limit_pay", limitPay);
+    map.put("openid", openid);
+    map.put("sub_openid", subOpenid);
+    map.put("receipt", receipt);
+    map.put("scene_info", sceneInfo);
+    map.put("fingerprint", fingerprint);
+    map.put("profit_sharing", profitSharing);
   }
 
 }
