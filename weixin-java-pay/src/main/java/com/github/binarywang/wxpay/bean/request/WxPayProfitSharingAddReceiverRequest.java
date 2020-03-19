@@ -5,6 +5,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.*;
 import me.chanjar.weixin.common.annotation.Required;
 
+import java.util.Map;
+
 /**
  * <pre>
  * 请求单次分账.
@@ -140,5 +142,10 @@ public class WxPayProfitSharingAddReceiverRequest extends BaseWxPayRequest {
   @Override
   protected void checkConstraints() {
     return;
+  }
+
+  @Override
+  protected void storeMap(Map<String, String> map) {
+    map.put("receiver", receiver);
   }
 }

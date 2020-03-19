@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.w3c.dom.Document;
 
 /**
  * <pre>
@@ -34,7 +35,13 @@ public class WxPayProfitSharingResult extends BaseWxPayResult {
   /**
    * 微信分账单号
    */
-  @XStreamAlias("orderId")
-  private String order_id;
+  @XStreamAlias("order_id")
+  private String orderId;
 
+  @Override
+  protected void loadXML(Document d) {
+    transactionId = readXMLString(d, "transaction_id");
+    outOrderNo = readXMLString(d, "out_order_no");
+    orderId = readXMLString(d, "order_id");
+  }
 }

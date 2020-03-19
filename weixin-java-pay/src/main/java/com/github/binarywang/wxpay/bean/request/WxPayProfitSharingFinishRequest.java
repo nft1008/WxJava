@@ -4,6 +4,8 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.*;
 
+import java.util.Map;
+
 /**
  * <pre>
  * 请求单次分账.
@@ -68,5 +70,12 @@ public class WxPayProfitSharingFinishRequest extends BaseWxPayRequest {
   @Override
   protected void checkConstraints() {
     return;
+  }
+
+  @Override
+  protected void storeMap(Map<String, String> map) {
+    map.put("transaction_id", transactionId);
+    map.put("out_order_no", outOrderNo);
+    map.put("description", description);
   }
 }

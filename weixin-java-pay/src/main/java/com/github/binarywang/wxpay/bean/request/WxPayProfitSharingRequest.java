@@ -5,6 +5,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <pre>
@@ -147,5 +148,12 @@ public class WxPayProfitSharingRequest extends BaseWxPayRequest {
   @Override
   protected void checkConstraints() throws WxPayException {
     return;
+  }
+
+  @Override
+  protected void storeMap(Map<String, String> map) {
+    map.put("transaction_id", transactionId);
+    map.put("out_order_no", outOrderNo);
+    map.put("receivers", receivers);
   }
 }
