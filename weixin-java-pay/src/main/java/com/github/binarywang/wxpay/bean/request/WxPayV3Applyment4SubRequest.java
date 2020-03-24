@@ -47,7 +47,7 @@ public class WxPayV3Applyment4SubRequest {
    */
   @Data
   @Builder
-  static class ContactInfo {
+  public static class ContactInfo {
 
     /**
      * 超级管理员姓名
@@ -99,7 +99,7 @@ public class WxPayV3Applyment4SubRequest {
    */
   @Data
   @Builder
-  static class SubjectInfo {
+  public static class SubjectInfo {
 
     /**
      * 主体类型
@@ -126,7 +126,7 @@ public class WxPayV3Applyment4SubRequest {
      */
     @Data
     @Builder
-    static class BusinessLicenseInfo {
+    public static class BusinessLicenseInfo {
 
       /**
        * 营业执照照片
@@ -167,7 +167,7 @@ public class WxPayV3Applyment4SubRequest {
      */
     @Data
     @Builder
-    static class IdentityInfo {
+    public static class IdentityInfo {
 
       /**
        * 证件类型
@@ -191,7 +191,7 @@ public class WxPayV3Applyment4SubRequest {
 
       @Data
       @Builder
-      static class IdCardInfo {
+      public static class IdCardInfo {
 
         /**
          * 身份证人像面照片
@@ -254,7 +254,7 @@ public class WxPayV3Applyment4SubRequest {
    */
   @Data
   @Builder
-  static class BusinessInfo {
+  public static class BusinessInfo {
 
     /**
      * 商户简称
@@ -275,7 +275,7 @@ public class WxPayV3Applyment4SubRequest {
      */
     @Data
     @Builder
-    static class SalesInfo {
+    public static class SalesInfo {
 
       /**
        * 经营场景类型
@@ -298,7 +298,7 @@ public class WxPayV3Applyment4SubRequest {
 
       @Data
       @Builder
-      static class MiniProgramInfo {
+      public static class MiniProgramInfo {
 
         /**
          * 服务商小程序APPID
@@ -337,7 +337,7 @@ public class WxPayV3Applyment4SubRequest {
    */
   @Data
   @Builder
-  static class SettlementInfo {
+  public static class SettlementInfo {
 
     /**
      * 入驻结算规则ID
@@ -385,7 +385,7 @@ public class WxPayV3Applyment4SubRequest {
    */
   @Data
   @Builder
-  static class BankAccountInfo {
+  public static class BankAccountInfo {
 
     /**
      * 账户类型
