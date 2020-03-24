@@ -115,17 +115,17 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postFileV3(String urlSuffix, File file) throws WxPayException {
+  public String postFileV3(String urlSuffix, String fileName, byte[] fileData) throws WxPayException {
     try {
-      String fileSha256 = DigestUtils.sha256Hex(new FileInputStream(file));//文件sha256
-      String meta = "{\"filename\":\""+file.getName()+"\",\"sha256\":\""+fileSha256+"\"}";
+      String fileSha256 = DigestUtils.sha256Hex(fileData);//文件sha256
+      String meta = "{\"filename\":\""+fileName+"\",\"sha256\":\""+fileSha256+"\"}";
 
       HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
-      HttpPost httpPost = this.createHttpPostFileV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, meta), this.getFileHttpEntity(file, meta));
+      HttpPost httpPost = this.createHttpPostFileV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, meta), this.getFileHttpEntity(fileName, fileData, meta));
       try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
           String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-          this.log.info("\n【请求地址】：{}\n【请求数据】：{}\n【响应数据】：{}", urlSuffix, file.getName(), responseString);
+          this.log.info("\n【请求地址】：{}\n【请求数据】：{}\n【响应数据】：{}", urlSuffix, fileName, responseString);
           if (response.getStatusLine().getStatusCode() != 200) {
             throw new WxPayException(responseString);
           }
@@ -135,7 +135,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
         httpPost.releaseConnection();
       }
     } catch (Exception e) {
-      this.log.error("\n【请求地址】：{}\n【请求数据】：{}\n【异常信息】：{}", urlSuffix, file.getName(), e.getMessage());
+      this.log.error("\n【请求地址】：{}\n【请求数据】：{}\n【异常信息】：{}", urlSuffix, fileName, e.getMessage());
       throw new WxPayException(e.getMessage(), e);
     }
   }
@@ -227,12 +227,12 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     return httpPost;
   }
 
-  private HttpEntity getFileHttpEntity(File file, String meta) {
+  private HttpEntity getFileHttpEntity(String fileName, byte[] fileData, String meta) {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
     multipartEntityBuilder.setBoundary("boundary=");
     multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
     multipartEntityBuilder.addTextBody("meta", meta, ContentType.APPLICATION_JSON);
-    multipartEntityBuilder.addBinaryBody("file", file, ContentType.create("image/jpg"), file.getName());
+    multipartEntityBuilder.addBinaryBody("file", fileData, ContentType.create("image/jpg"), fileName);
     return multipartEntityBuilder.build();
   }
 

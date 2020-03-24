@@ -270,6 +270,10 @@ public class WxPayV3Applyment4SubRequest {
     @SerializedName("service_phone")
     private String servicePhone;
 
+    @SerializedName("sales_info")
+    private SalesInfo salesInfo;
+
+
     /**
      * 经营场景
      */
