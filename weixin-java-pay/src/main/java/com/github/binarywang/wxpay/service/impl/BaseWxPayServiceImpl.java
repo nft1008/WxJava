@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -885,7 +886,7 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
-  public WxPayV3MediaUploadResult v3MediaUpload(String fileName, byte[] fileData) throws WxPayException {
+  public WxPayV3MediaUploadResult v3MediaUpload(String fileName, InputStream fileData) throws WxPayException {
     String url = "/v3/merchant/media/upload";
     String responseContent = this.postFileV3(url, fileName, fileData);
     if (StringUtils.isBlank(responseContent)) {

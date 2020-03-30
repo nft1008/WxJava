@@ -2,6 +2,7 @@ package com.github.binarywang.wxpay.service.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +116,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postFileV3(String urlSuffix, String fileName, byte[] fileData) throws WxPayException {
+  public String postFileV3(String urlSuffix, String fileName, InputStream fileData) throws WxPayException {
     try {
       String fileSha256 = DigestUtils.sha256Hex(fileData);//文件sha256
       String meta = "{\"filename\":\""+fileName+"\",\"sha256\":\""+fileSha256+"\"}";
@@ -227,7 +228,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     return httpPost;
   }
 
-  private HttpEntity getFileHttpEntity(String fileName, byte[] fileData, String meta) {
+  private HttpEntity getFileHttpEntity(String fileName, InputStream fileData, String meta) {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
     multipartEntityBuilder.setBoundary("boundary=");
     multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
