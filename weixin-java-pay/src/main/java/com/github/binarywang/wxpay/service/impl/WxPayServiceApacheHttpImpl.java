@@ -297,16 +297,18 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
 
   private Map<String, String> getHeadersV3(String authorization) {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "application/json;charset=utf-8");
-    headers.put("Accept", "application/json;charset=utf-8");
+    headers.put("Charset", "UTF-8");
+    headers.put("Content-Type", "application/json");
+    headers.put("Accept", "application/json");
     headers.put("Authorization", authorization);
     return headers;
   }
 
   private Map<String, String> getFileHeadersV3(String authorization) {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "multipart/form-data;boundary=\"boundary\"");
-    headers.put("Accept", "application/json;charset=utf-8");
+    headers.put("Charset", "UTF-8");
+    headers.put("Content-Type", "multipart/form-data;boundary=boundary");
+    headers.put("Accept", "application/json");
     headers.put("Authorization", authorization);
     return headers;
   }
