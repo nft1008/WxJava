@@ -230,7 +230,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
 
   private HttpEntity getFileHttpEntity(String fileName, InputStream fileData, String meta) {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
-    multipartEntityBuilder.setBoundary("boundary=");
+    multipartEntityBuilder.setBoundary("boundary");
     multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
     multipartEntityBuilder.addTextBody("meta", meta, ContentType.APPLICATION_JSON);
     multipartEntityBuilder.addBinaryBody("file", fileData, ContentType.create("image/jpg"), fileName);
