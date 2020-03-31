@@ -116,13 +116,13 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postFileV3(String urlSuffix, String fileName, InputStream fileData) throws WxPayException {
+  public String postFileV3(String urlSuffix, String fileName, File file) throws WxPayException {
     try {
-      String fileSha256 = DigestUtils.sha256Hex(fileData);//文件sha256
+      String fileSha256 = DigestUtils.sha256Hex(new FileInputStream(file));//文件sha256
       String meta = "{\"filename\":\""+fileName+"\",\"sha256\":\""+fileSha256+"\"}";
 
       HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
-      HttpPost httpPost = this.createHttpPostFileV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, meta), this.getFileHttpEntity(fileName, fileData, meta));
+      HttpPost httpPost = this.createHttpPostFileV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, meta), this.getFileHttpEntity(fileName, file, meta));
       try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
           String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -228,12 +228,12 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     return httpPost;
   }
 
-  private HttpEntity getFileHttpEntity(String fileName, InputStream fileData, String meta) {
+  private HttpEntity getFileHttpEntity(String fileName, File file, String meta) {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(HttpMultipartMode.RFC6532);
     multipartEntityBuilder.setBoundary("boundary");
     multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
     multipartEntityBuilder.addTextBody("meta", meta, ContentType.APPLICATION_JSON);
-    multipartEntityBuilder.addBinaryBody("file", fileData, ContentType.create("image/jpg"), fileName);
+    multipartEntityBuilder.addBinaryBody("file", file, ContentType.create("image/jpg"), fileName);
     return multipartEntityBuilder.build();
   }
 

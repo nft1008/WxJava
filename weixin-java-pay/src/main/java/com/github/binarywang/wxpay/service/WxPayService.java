@@ -66,7 +66,7 @@ public interface WxPayService {
   /**
    * 发送post V3 file请求.
    */
-  String postFileV3(String urlSuffix, String fileName, InputStream fileData) throws WxPayException;
+  String postFileV3(String urlSuffix, String fileName, File file) throws WxPayException;
 
   /**
    * 发送get V3请求，得到响应字符串.
@@ -747,7 +747,7 @@ public interface WxPayService {
   /**
    * 图片上传
    */
-  WxPayV3MediaUploadResult v3MediaUpload(String fileName, InputStream fileData) throws WxPayException;
+  WxPayV3MediaUploadResult v3MediaUpload(String fileName, File file) throws WxPayException;
 
   /**
    * <pre>

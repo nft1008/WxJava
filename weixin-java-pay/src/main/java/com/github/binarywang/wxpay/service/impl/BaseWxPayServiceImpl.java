@@ -886,9 +886,9 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
-  public WxPayV3MediaUploadResult v3MediaUpload(String fileName, InputStream fileData) throws WxPayException {
+  public WxPayV3MediaUploadResult v3MediaUpload(String fileName, File file) throws WxPayException {
     String url = "/v3/merchant/media/upload";
-    String responseContent = this.postFileV3(url, fileName, fileData);
+    String responseContent = this.postFileV3(url, fileName, file);
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
     }

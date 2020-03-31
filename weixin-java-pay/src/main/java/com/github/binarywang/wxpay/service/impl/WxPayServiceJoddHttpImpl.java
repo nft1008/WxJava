@@ -75,7 +75,7 @@ public class WxPayServiceJoddHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postFileV3(String urlSuffix, String fileName, InputStream fileData) throws WxPayException {
+  public String postFileV3(String urlSuffix, String fileName, File file) throws WxPayException {
     return null;
   }
 
