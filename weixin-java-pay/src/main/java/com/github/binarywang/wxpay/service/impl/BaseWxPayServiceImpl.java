@@ -838,7 +838,7 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
 
   @Override
   public WxPayV3Applyment4SubResult v3Applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException {
-    String urlSuffix = this.getPayBaseUrl() + "/v3/applyment4sub/applyment/";
+    String urlSuffix = "/v3/applyment4sub/applyment/";
     Gson gson = new Gson();
     request.encryptData(this.config.getCert());
     String responseContent = this.postV3(urlSuffix, gson.toJson(request));
