@@ -855,7 +855,7 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
     WxPayV3CertificatesResult certificatesResult = this.v3GetCertificates();
     WxPayV3CertificatesResult.Certificate certificate = certificatesResult.getData()[0];
     Gson gson = new Gson();
-    request.encryptData(this.config.getPlatformCert(certificate.getEncryptCertificate()));
+    request.encryptData(this.config.getPlatformCert(certificate.getEncryptCertificate()).getPublicKey());
     String responseContent = this.postV3(urlSuffix, gson.toJson(request), certificate.getSerialNo());
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
