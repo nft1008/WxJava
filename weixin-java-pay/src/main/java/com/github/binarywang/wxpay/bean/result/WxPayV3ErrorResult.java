@@ -17,6 +17,7 @@ public class WxPayV3ErrorResult {
   @SerializedName("detail")
   private Detail detail;
 
+  @Data
   public static class Detail {
 
     @SerializedName("detail")

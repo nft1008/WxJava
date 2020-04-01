@@ -14,7 +14,6 @@ import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.*;
 import com.github.binarywang.wxpay.config.WxPayConfig;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
-import com.github.binarywang.wxpay.constant.WxPayConstants.BillType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.SignType;
 import com.github.binarywang.wxpay.constant.WxPayConstants.TradeType;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -837,11 +836,27 @@ public abstract class BaseWxPayServiceImpl implements WxPayService {
   }
 
   @Override
+  public WxPayV3CertificatesResult v3GetCertificates() throws WxPayException {
+    String urlSuffix = "/v3/certificates";
+    Gson gson = new Gson();
+    String responseContent = this.getV3(urlSuffix);
+    if (StringUtils.isBlank(responseContent)) {
+      throw new WxPayException("无响应结果");
+    }
+
+    WxPayV3CertificatesResult result = gson.fromJson(responseContent, WxPayV3CertificatesResult.class);
+    return result;
+  }
+
+  @Override
   public WxPayV3Applyment4SubResult v3Applyment4Sub(WxPayV3Applyment4SubRequest request) throws WxPayException {
     String urlSuffix = "/v3/applyment4sub/applyment/";
+
+    WxPayV3CertificatesResult certificatesResult = this.v3GetCertificates();
+    WxPayV3CertificatesResult.Certificate certificate = certificatesResult.getData()[0];
     Gson gson = new Gson();
-    request.encryptData(this.config.getCert());
-    String responseContent = this.postV3(urlSuffix, gson.toJson(request));
+    request.encryptData(this.config.getPlatformCert(certificate.getEncryptCertificate()));
+    String responseContent = this.postV3(urlSuffix, gson.toJson(request), certificate.getSerialNo());
     if (StringUtils.isBlank(responseContent)) {
       throw new WxPayException("无响应结果");
     }

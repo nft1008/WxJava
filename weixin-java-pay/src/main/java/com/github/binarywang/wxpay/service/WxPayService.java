@@ -61,7 +61,7 @@ public interface WxPayService {
   /**
    * 发送post V3请求，得到响应字符串.
    */
-  String postV3(String urlSuffix, String requestStr) throws WxPayException;
+  String postV3(String urlSuffix, String requestStr, String serialNo) throws WxPayException;
 
   /**
    * 发送post V3 file请求.
@@ -728,6 +728,11 @@ public interface WxPayService {
    * @throws WxPayException the wx pay exception
    */
   String queryComment(WxPayQueryCommentRequest request) throws WxPayException;
+
+  /**
+   * 下载平台证书API
+   */
+  WxPayV3CertificatesResult v3GetCertificates() throws WxPayException;
 
   /**
    * 特约商户进件 - 提交申请单API

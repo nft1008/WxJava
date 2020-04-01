@@ -93,10 +93,10 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postV3(String urlSuffix, String body) throws WxPayException {
+  public String postV3(String urlSuffix, String body, String serialNo) throws WxPayException {
     try {
       HttpClientBuilder httpClientBuilder = this.createHttpClientBuilder(false);
-      HttpPost httpPost = this.createHttpPostV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, body), body);
+      HttpPost httpPost = this.createHttpPostV3(this.getPayBaseUrl().concat(urlSuffix), this.getAuthorization(WxPayConstants.RequestMethod.POST, urlSuffix, body), body, serialNo);
       try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
           String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -211,11 +211,14 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     return httpPost;
   }
 
-  private HttpPost createHttpPostV3(String url, String authorization, String jsonData) {
+  private HttpPost createHttpPostV3(String url, String authorization, String jsonData, String serialNo) {
     HttpPost httpPost = new HttpPost(url);
     Map<String, String> headers = getHeadersV3(authorization);
     for (Map.Entry<String, String> entry : headers.entrySet()) {
       httpPost.setHeader(entry.getKey(), entry.getValue());
+    }
+    if (StringUtils.isNotBlank(serialNo)) {
+      httpPost.setHeader("Wechatpay-Serial", serialNo);
     }
     httpPost.setEntity(new StringEntity(jsonData, StandardCharsets.UTF_8));
 
@@ -292,7 +295,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     String signature = V3Utils.encryptByPrivateKey(buildSignMessage, key);
     // 根据平台规则生成请求头 authorization
     String authType = "WECHATPAY2-SHA256-RSA2048";
-    return V3Utils.getAuthorization(this.config.getMchId(), this.config.getSerialNo(), nonceStr, String.valueOf(timestamp), signature, authType);
+    return V3Utils.getAuthorization(this.config.getMchId(), this.config.getCert().getSerialNumber().toString(), nonceStr, String.valueOf(timestamp), signature, authType);
   }
 
   private Map<String, String> getHeadersV3(String authorization) {

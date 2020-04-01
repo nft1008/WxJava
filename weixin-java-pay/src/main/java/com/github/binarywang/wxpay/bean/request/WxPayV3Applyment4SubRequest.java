@@ -295,7 +295,7 @@ public class WxPayV3Applyment4SubRequest {
        * 企业微信：SALES_SCENES_WEWORK
        */
       @SerializedName("sales_scenes_type")
-      private String salesScenesType;
+      private String[] salesScenesType;
 
       @SerializedName("mini_program_info")
       private MiniProgramInfo miniProgramInfo;
@@ -328,7 +328,7 @@ public class WxPayV3Applyment4SubRequest {
          * 首次提交未成功进件，二次提交时必填
          */
         @SerializedName("mini_program_pics")
-        private String miniProgramPics;
+        private String[] miniProgramPics;
 
       }
     }

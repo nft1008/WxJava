@@ -1,11 +1,16 @@
 package com.github.binarywang.wxpay.config;
 
+import com.github.binarywang.wxpay.bean.result.WxPayV3CertificatesResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import lombok.Data;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.net.URL;
@@ -87,8 +92,6 @@ public class WxPayConfig {
    * p12证书文件的绝对路径或者以classpath:开头的类路径.
    */
   private String keyPath;
-
-  private String serialNo;
 
   /**
    * p12证书文件内容的字节数组.
@@ -257,6 +260,62 @@ public class WxPayConfig {
       throw new WxPayException("证书文件有问题，请核实！", e);
     } finally {
       IOUtils.closeQuietly(inputStream);
+    }
+  }
+
+  /**
+   * 获取证书序列号
+   * @return
+   * @throws WxPayException
+   */
+  public String getSerialNo() throws WxPayException{
+    return this.getCert().getSerialNumber().toString(16).toUpperCase();
+  }
+
+  /**
+   * 平台证书
+   * @return
+   * @throws WxPayException
+   */
+  public X509Certificate getPlatformCert(WxPayV3CertificatesResult.Certificate.EncryptCertificate encryptCertificate) throws WxPayException {
+    try {
+      String certString = this.decryptToString(encryptCertificate.getAssociatedData().getBytes(), encryptCertificate.getNonce().getBytes(), encryptCertificate.getCiphertext());
+
+      KeyStore keystore = KeyStore.getInstance("PKCS12");
+      char[] partnerId2charArray = this.getMchId().toCharArray();
+      keystore.load(new ByteArrayInputStream(certString.getBytes()), partnerId2charArray);
+
+      Enumeration enume = keystore.aliases();
+      String keyAlias = null;
+      if (enume.hasMoreElements()) {
+        keyAlias = (String) enume.nextElement();
+      }
+      return (X509Certificate) keystore.getCertificate(keyAlias);
+    } catch (Exception e) {
+      throw new WxPayException("证书文件有问题，请核实！", e);
+    }
+  }
+
+  public String getSerialNo(X509Certificate certificate) {
+    return certificate.getSerialNumber().toString(16).toUpperCase();
+  }
+
+  public String decryptToString(byte[] associatedData, byte[] nonce, String ciphertext)
+    throws GeneralSecurityException, IOException {
+    try {
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+
+      SecretKeySpec key = new SecretKeySpec(this.getMchKey().getBytes(), "AES");
+      GCMParameterSpec spec = new GCMParameterSpec(128, nonce);
+
+      cipher.init(Cipher.DECRYPT_MODE, key, spec);
+      cipher.updateAAD(associatedData);
+
+      return new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)), "utf-8");
+    } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+      throw new IllegalStateException(e);
+    } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+      throw new IllegalArgumentException(e);
     }
   }
 
