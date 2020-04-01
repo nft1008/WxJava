@@ -70,7 +70,7 @@ public class WxPayServiceJoddHttpImpl extends BaseWxPayServiceImpl {
   }
 
   @Override
-  public String postV3(String urlSuffix, String requestStr) throws WxPayException {
+  public String postV3(String urlSuffix, String requestStr, String serialNo) throws WxPayException {
     return null;
   }
 

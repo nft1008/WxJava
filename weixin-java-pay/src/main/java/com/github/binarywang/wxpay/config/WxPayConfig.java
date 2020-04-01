@@ -6,6 +6,7 @@ import lombok.Data;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.SSLContexts;
+import sun.misc.BASE64Decoder;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -16,6 +17,7 @@ import java.io.*;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Enumeration;
 
@@ -277,20 +279,17 @@ public class WxPayConfig {
    * @return
    * @throws WxPayException
    */
-  public X509Certificate getPlatformCert(WxPayV3CertificatesResult.Certificate.EncryptCertificate encryptCertificate) throws WxPayException {
+  public PublicKey getPlatformCert(WxPayV3CertificatesResult.Certificate.EncryptCertificate encryptCertificate) throws WxPayException {
     try {
       String certString = this.decryptToString(encryptCertificate.getAssociatedData().getBytes(), encryptCertificate.getNonce().getBytes(), encryptCertificate.getCiphertext());
 
-      KeyStore keystore = KeyStore.getInstance("PKCS12");
-      char[] partnerId2charArray = this.getMchId().toCharArray();
-      keystore.load(new ByteArrayInputStream(certString.getBytes()), partnerId2charArray);
+      byte[] keyBytes;
+      keyBytes = (new BASE64Decoder()).decodeBuffer(certString);
+      X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+      KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+      PublicKey publicKey = keyFactory.generatePublic(keySpec);
+      return publicKey;
 
-      Enumeration enume = keystore.aliases();
-      String keyAlias = null;
-      if (enume.hasMoreElements()) {
-        keyAlias = (String) enume.nextElement();
-      }
-      return (X509Certificate) keystore.getCertificate(keyAlias);
     } catch (Exception e) {
       throw new WxPayException("证书文件有问题，请核实！", e);
     }

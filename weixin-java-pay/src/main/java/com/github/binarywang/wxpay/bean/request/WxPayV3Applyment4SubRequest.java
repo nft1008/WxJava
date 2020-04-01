@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 @Data
@@ -452,16 +453,16 @@ public class WxPayV3Applyment4SubRequest {
   /**
    * 加密敏感信息
    */
-  public void encryptData(X509Certificate certificate) throws WxPayException {
+  public void encryptData(PublicKey publicKey) throws WxPayException {
     try {
-      this.contactInfo.contactName = V3Utils.rsaEncryptOAEP(this.contactInfo.contactName, certificate);
-      this.contactInfo.contactIdNumber = V3Utils.rsaEncryptOAEP(this.contactInfo.contactIdNumber, certificate);
-      this.contactInfo.mobilePhone = V3Utils.rsaEncryptOAEP(this.contactInfo.mobilePhone, certificate);
-      this.contactInfo.contactEmail = V3Utils.rsaEncryptOAEP(this.contactInfo.contactEmail, certificate);
-      this.subjectInfo.identityInfo.idCardInfo.idCardName = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardName, certificate);
-      this.subjectInfo.identityInfo.idCardInfo.idCardNumber = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardNumber, certificate);
-      this.bankAccountInfo.accountName = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountName, certificate);
-      this.bankAccountInfo.accountNumber = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountNumber, certificate);
+      this.contactInfo.contactName = V3Utils.rsaEncryptOAEP(this.contactInfo.contactName, publicKey);
+      this.contactInfo.contactIdNumber = V3Utils.rsaEncryptOAEP(this.contactInfo.contactIdNumber, publicKey);
+      this.contactInfo.mobilePhone = V3Utils.rsaEncryptOAEP(this.contactInfo.mobilePhone, publicKey);
+      this.contactInfo.contactEmail = V3Utils.rsaEncryptOAEP(this.contactInfo.contactEmail, publicKey);
+      this.subjectInfo.identityInfo.idCardInfo.idCardName = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardName, publicKey);
+      this.subjectInfo.identityInfo.idCardInfo.idCardNumber = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardNumber, publicKey);
+      this.bankAccountInfo.accountName = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountName, publicKey);
+      this.bankAccountInfo.accountNumber = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountNumber, publicKey);
     } catch (Exception e) {
       throw new WxPayException("信息加密失败");
     }

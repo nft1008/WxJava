@@ -295,7 +295,7 @@ public class WxPayServiceApacheHttpImpl extends BaseWxPayServiceImpl {
     String signature = V3Utils.encryptByPrivateKey(buildSignMessage, key);
     // 根据平台规则生成请求头 authorization
     String authType = "WECHATPAY2-SHA256-RSA2048";
-    return V3Utils.getAuthorization(this.config.getMchId(), this.config.getCert().getSerialNumber().toString(), nonceStr, String.valueOf(timestamp), signature, authType);
+    return V3Utils.getAuthorization(this.config.getMchId(), this.config.getSerialNo(), nonceStr, String.valueOf(timestamp), signature, authType);
   }
 
   private Map<String, String> getHeadersV3(String authorization) {
