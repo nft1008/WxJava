@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
 
 @Data
 @Builder(builderMethodName = "newBuilder")
@@ -41,6 +40,23 @@ public class WxPayV3Applyment4SubRequest {
   @SerializedName("bank_account_info")
   private BankAccountInfo bankAccountInfo;
 
+  /**
+   * 加密敏感信息
+   */
+  public void encryptData(PublicKey publicKey) throws WxPayException {
+    try {
+      this.contactInfo.contactName = V3Utils.rsaEncryptOAEP(this.contactInfo.contactName, publicKey);
+      this.contactInfo.contactIdNumber = V3Utils.rsaEncryptOAEP(this.contactInfo.contactIdNumber, publicKey);
+      this.contactInfo.mobilePhone = V3Utils.rsaEncryptOAEP(this.contactInfo.mobilePhone, publicKey);
+      this.contactInfo.contactEmail = V3Utils.rsaEncryptOAEP(this.contactInfo.contactEmail, publicKey);
+      this.subjectInfo.identityInfo.idCardInfo.idCardName = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardName, publicKey);
+      this.subjectInfo.identityInfo.idCardInfo.idCardNumber = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardNumber, publicKey);
+      this.bankAccountInfo.accountName = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountName, publicKey);
+      this.bankAccountInfo.accountNumber = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountNumber, publicKey);
+    } catch (Exception e) {
+      throw new WxPayException("信息加密失败");
+    }
+  }
 
   /**
    * 超级管理员信息
@@ -182,6 +198,9 @@ public class WxPayV3Applyment4SubRequest {
       @SerializedName("id_card_info")
       private IdCardInfo idCardInfo;
 
+      @SerializedName("id_doc_info")
+      private IdDocInfo idDocinfo;
+
       /**
        * 经营者/法人是否为受益人
        * 1、若经营者/法人是最终受益人，则填写：true。
@@ -246,6 +265,56 @@ public class WxPayV3Applyment4SubRequest {
 
       }
 
+      /**
+       * 其他证件信息
+       */
+      @Data
+      @Builder
+      public static class IdDocInfo {
+
+        /**
+         * 证件照
+         * 1、请上传彩色照片or彩色扫描件or复印件（需加盖公章鲜章），可添加“微信支付”相关水印（如微信支付认证）。
+         * 2、可上传1张图片，请填写通过图片上传接口预先上传图片生成好的MediaID。
+         */
+        @SerializedName("id_doc_copy")
+        private String idDocCopy;
+
+        /**
+         * 证件姓名
+         * 1、请填写经营者/法定代表人的证件姓名，2~30个中文字符、英文字符、符号。
+         * 2、该字段需进行加密处理
+         */
+        @SerializedName("id_doc_name")
+        private String idDocName;
+
+        /**
+         * 证件号码
+         * 1、请填写经营者/法定代表人的证件号码。
+         * 2、8-30位数字|字母|连字符，该字段需进行加密处理
+         */
+        @SerializedName("id_doc_number")
+        private String idDocnumber;
+
+        /**
+         * 证件有效期开始时间
+         * 1、必填，请按照示例值填写。
+         * 2、结束时间大于开始时间。
+         */
+        @SerializedName("doc_period_begin")
+        private String docPeriodBegin;
+
+        /**
+         * 证件有效期结束时间
+         * 1、必填，请按照示例值填写。
+         * 2、若证件有效期为长期，请填写：长期。
+         * 3、结束时间大于开始时间。
+         * 4、证件有效期需大于60天。
+         */
+        @SerializedName("doc_period_end")
+        private String docPeriodEnd;
+      }
+
     }
   }
 
@@ -287,7 +356,7 @@ public class WxPayV3Applyment4SubRequest {
        * 1、请勾选实际售卖商品/提供服务场景（至少一项），以便为你开通需要的支付权限。
        * 2、建议只勾选目前必须的场景，以便尽快通过入驻审核，其他支付权限可在入驻后再根据实际需要发起申请。
        * 枚举值：
-       *
+       * <p>
        * 线下门店：SALES_SCENES_STORE
        * 公众号：SALES_SCENES_MP
        * 小程序：SALES_SCENES_MINI_PROGRAM
@@ -397,7 +466,7 @@ public class WxPayV3Applyment4SubRequest {
      * 1、若主体为企业/党政、机关及事业单位/其他组织，可填写：对公银行账户。
      * 2、若主体为个体户，可选择填写：对公银行账户或经营者个人银行卡。
      * 枚举值：
-     *
+     * <p>
      * BANK_ACCOUNT_TYPE_CORPORATE：对公银行账户
      * BANK_ACCOUNT_TYPE_PERSONAL：经营者个人银行卡
      */
@@ -448,24 +517,6 @@ public class WxPayV3Applyment4SubRequest {
      */
     @SerializedName("account_number")
     private String accountNumber;
-  }
-
-  /**
-   * 加密敏感信息
-   */
-  public void encryptData(PublicKey publicKey) throws WxPayException {
-    try {
-      this.contactInfo.contactName = V3Utils.rsaEncryptOAEP(this.contactInfo.contactName, publicKey);
-      this.contactInfo.contactIdNumber = V3Utils.rsaEncryptOAEP(this.contactInfo.contactIdNumber, publicKey);
-      this.contactInfo.mobilePhone = V3Utils.rsaEncryptOAEP(this.contactInfo.mobilePhone, publicKey);
-      this.contactInfo.contactEmail = V3Utils.rsaEncryptOAEP(this.contactInfo.contactEmail, publicKey);
-      this.subjectInfo.identityInfo.idCardInfo.idCardName = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardName, publicKey);
-      this.subjectInfo.identityInfo.idCardInfo.idCardNumber = V3Utils.rsaEncryptOAEP(this.subjectInfo.identityInfo.idCardInfo.idCardNumber, publicKey);
-      this.bankAccountInfo.accountName = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountName, publicKey);
-      this.bankAccountInfo.accountNumber = V3Utils.rsaEncryptOAEP(this.bankAccountInfo.accountNumber, publicKey);
-    } catch (Exception e) {
-      throw new WxPayException("信息加密失败");
-    }
   }
 
 }
